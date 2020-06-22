@@ -1,0 +1,8 @@
+#output {
+    border:1px solid;
+    padding:3px
+}
+#output svg{
+    max-width:100%;
+    max-height: 100%
+}
