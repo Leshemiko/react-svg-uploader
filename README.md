@@ -1,7 +1,7 @@
 # react-svg-uploader
 React component for uploading and editing SVG elements
 
-## Upload ad edit svg viewBox and fill colors. Completely customable for your needs.
+## Upload and edit svg viewBox and fill colors. Completely customable for your needs.
 
 ### TODO: 
  1. Complete Undo/Redo actions
