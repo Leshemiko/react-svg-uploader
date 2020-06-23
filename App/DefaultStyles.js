@@ -1,4 +1,25 @@
 const DefaultStyles = {
+    wrap: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '250px',
+        border: '1px dotted #cecece',
+        borderRadius: '5px'
+    },
+    uploadButton: {
+        outline: 'none',
+        border: 'none',
+        margin: '20px auto',
+        padding: '10px',
+        borderRadius: '5px',
+        color: '#fff',
+        background: '#67a3ce',
+        fontSize: '14px',
+        textTransform: 'uppercase',
+        boxShadow: '0px 3px 5px -3px rgba(51, 51, 51, 0.72)'
+    },
     outputBox: {
         width:100,
         height:100,

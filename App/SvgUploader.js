@@ -6,6 +6,9 @@ const SvgUploader = (props) => {
     //initializer
     let { 
             getAPI,
+            submitRenderer,
+            wrapStyle = DefaultStyles.wrap,
+            hideProgressBar,
             outPutBoxRender, 
             undoRedoRenderer,
             progressBarId = 'progress-bar',
@@ -13,23 +16,25 @@ const SvgUploader = (props) => {
             buttonRenderer, 
             progressRenderer,
             inputStyle = DefaultStyles.fileInputStyle, 
-            buttonStyle = {} 
+            buttonStyle = DefaultStyles.uploadButton
         } = props;
     const outputEl = useRef(null);
     const inputEl = useRef(null);
     const [uploadedEl, setUploadedEl] = useState(null);
+    const [hoverState, setHoverState] = useState(false);
     const [undoStorage, setUndoStorage] = useState([]);   
     const [redoStorage, setRedoStorage] = useState([]);   
+    const [displayProgressBar, setDisplayProgressBar] = useState(false);   
    
     const viewBoxRegex = /(?<=\bviewBox=")[^"]*/igm;
     const fillRegex = /(?<=\bfill=")[^"]*/igm;
 
-    useEffect(() => {
-        setAPI()
-      }, []);    
+    // useEffect(() => {
+    //     setAPI()
+    //   }, []);    
 
     //handlers
-
+    
     const setAPI = () => {
         if(!getAPI) return null;
             return getAPI({
@@ -78,7 +83,6 @@ const SvgUploader = (props) => {
         storeUndoChanges(lastChange);
     };
 
-
     const handleUploadButtonClick = (e, inputId) => {
         e.preventDefault();
         let inputEl = document.querySelector(`#${inputId || 'fileUploadEl'}`);
@@ -89,6 +93,7 @@ const SvgUploader = (props) => {
     };
 
     const processFile = (file) => {
+       
         const fr = new FileReader();
         fr.readAsText(file);
         fr.onerror = errorHandler;
@@ -120,6 +125,7 @@ const SvgUploader = (props) => {
       // Updates the value of the progress bar
     const setProgress = (e) => {
         // The target is the file reader
+        if(hideProgressBar) return;;
         const progressBar = document.getElementById(progressBarId);
         if(!document.getElementById(progressBarId)) return;
         const fr = e.target;
@@ -142,9 +148,13 @@ const SvgUploader = (props) => {
         changeStatus("Error: " + e.target.error.name)
     };
 
-    const handleFileUpload = (e) => {
-        const file = e.target.files[0];
+    const handleFileUpload = (e, dropedFile) => {
+        const file = dropedFile ? dropedFile : e.target.files[0];
         if (file) {
+          if(file.type.indexOf('svg') === -1){
+            changeStatus("Error: " + 'SVG files only');
+            return
+          }  
           processFile(file);
         }
     };
@@ -206,6 +216,23 @@ const SvgUploader = (props) => {
        }
     };
 
+    const handleDragOver = (e) => {
+       e.preventDefault();
+    //    setHoverState(true)
+    };
+
+    const onDrop = (e,cat) => {
+        e.preventDefault();
+        let file = e.dataTransfer.files[0];
+        handleFileUpload(e,file)
+    };
+
+    const sendResult = () => {
+        return {
+            result: uploadedEl
+        }
+    };
+
     //renderers
     const renderInput = (inputId) => {
         return (
@@ -213,23 +240,27 @@ const SvgUploader = (props) => {
             ? 
                 inputRenderer((e) => handleFileUpload(e)) 
             :  
-                <input onChange={ (e) => handleFileUpload(e) } type="file" accept=".svg" ref={inputEl} id={inputId || "fileUploadEl"} style={inputStyle}/>
+                <input onInput={ (e) => handleFileUpload(e) } accept=".svg" type="file" ref={inputEl} id={inputId || "fileUploadEl"} style={inputStyle}/>
         )
     };
 
     const renderButton = () => {
         return (
-            buttonRenderer 
-            ? 
-                buttonRenderer((e, inputId) => handleUploadButtonClick(e,inputId)) 
-            :  
-                <button 
-                    id="fileSelect" 
-                    onClick={ (e) => { handleUploadButtonClick(e)} }
-                    style={buttonStyle}
-                >
-                    {props.label}
-                </button>
+            <div>
+                {
+                    buttonRenderer 
+                    ? 
+                        buttonRenderer((e, inputId) => handleUploadButtonClick(e,inputId)) 
+                    :  
+                        <button 
+                            id="fileSelect" 
+                            onClick={ (e) => { handleUploadButtonClick(e)} }
+                            style={buttonStyle}
+                        >
+                            {props.label}
+                        </button>
+                }
+            </div>
         )
     };
 
@@ -299,6 +330,7 @@ const SvgUploader = (props) => {
     };
 
     const renderProgressBar = () => {
+        
         if(progressRenderer) return progressRenderer()
         return (
             <div>
@@ -333,15 +365,32 @@ const SvgUploader = (props) => {
         )
     };
 
+    const renderOutputResult = () => {
+        if(!uploadedEl) return null;
+        if(submitRenderer){
+            return submitRenderer(()=> {sendResult()})
+        }
+        return(
+            <div>
+                <div>
+                    <button onClick={(e) => {sendResult(e)}}>OK</button>
+                </div>
+            </div>
+        )
+    };
+
     return (
-        <div>
+        <div style={wrapStyle} 
+            onDragOver={(e) => handleDragOver(e)} 
+            onDrop={(e) => onDrop(e,"complete")}>
            { renderInput() }
            { renderButton() }
-           { renderProgressBar() }
+           {/* { renderProgressBar() } */}
            { renderUndoRedoButtons() }
            { renderOutputBox() }
            { renderThemeColumn() }
            { renderViewBoxEditor() }
+           { renderOutputResult() }
         </div>
     )
 }

@@ -6,6 +6,7 @@ export default {
     component: SvgUploader,
 };
 export const Default = () => <SvgUploader label="Upload"/>;
+
 //custom examples 
 
 const styles = {
@@ -65,9 +66,22 @@ const renderUndoRedoButtons = (undoAction,redoAction)  => {
     )
 };
 
-const myAPI = (api) => {
-    console.log(api)
-    window.API = api;
+
+const handleSubmitResult = (e,action) => {
+    let res = action()
+    let output = JSON.stringify(res);
+    let outputCode = document.querySelector("#codeDisplay");
+    if(outputCode){
+        outputCode.innerHTML = output
+    }
+};
+
+const renderSubmit = (action) => {
+    return (
+        <div>
+            <button onClick={(e) => {action(e)}}>SUBMIT</button>
+        </div>
+    )
 };
 
 export const CustomRenderers = () => {
@@ -79,44 +93,13 @@ export const CustomRenderers = () => {
                 progressRenderer={renderProgress}
                 outPutBoxRender={renderOutPutBox}
                 undoRedoRenderer={renderUndoRedoButtons}
-                getAPI={myAPI}
+                submitRenderer={renderSubmit}
             />
             <div>
                 <blockquote style={{margin:0}}> 
                     <pre style={styles.codeStyle}>
-                        <code >
-                            {
-`<SvgUploader 
-    buttonRenderer={renderButton}
-    inputRenderer={renderFileInput}
-    progressRenderer={renderProgress}
-/>
-const renderProgress = () => {
-    return null
-};
-const renderButton = (buttonAction) => {//onClick action callback from SvgUploader
-    return (
-        <button 
-            id="myCustomButtonId" 
-            onClick={(e) => buttonAction(e, "myInputId")} //pass custom input id 
-            style={{background:'red',color:'#fff'}}
-        >
-            Upload svg here
-        </button>
-    )
-};
-
-const renderFileInput = (uploadAction) => {//onChange action callback from SvgUploader
-    const customOnchange = (e) => {
-        alert(e.target.value);
-        uploadAction(e)
-    };
-    return (
-        <input type="file" onChange={(e) => customOnchange(e)}/>
-    )
-};`
-                            }
-                    
+                        <code id="codeDisplay">
+                           
                         </code>
                     </pre>  
                 </blockquote>
